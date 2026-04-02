@@ -2,34 +2,40 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>번호 뽑기 앱</title>
     <style>
-        body { font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #ffffff; }
-        .container { text-align: center; width: 80%; max-width: 400px; }
-        input { width: 80px; padding: 12px; margin: 10px; border: 2px solid #eee; border-radius: 8px; font-size: 18px; text-align: center; }
-        button { width: 100%; padding: 15px; background-color: #3182f6; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 20px; }
-        #result { font-size: 5rem; font-weight: 800; margin-top: 30px; color: #3182f6; }
-        p { color: #8b95a1; }
+        body { font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f2f5; }
+        .container { text-align: center; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 80%; max-width: 400px; }
+        #result { font-size: 3rem; font-weight: bold; color: #4A90E2; margin: 20px 0; min-height: 1.2em; }
+        button { width: 100%; padding: 15px; background-color: #4A90E2; color: white; border: none; border-radius: 10px; font-size: 1.2rem; cursor: pointer; }
+        p { color: #8b95a1; font-size: 0.9rem; }
     </style>
 </head>
 <body>
     <div class="container">
-        <p>숫자 범위를 입력하세요</p>
-        <input type="number" id="min" value="1"> 
-        <input type="number" id="max" value="100">
-        <button onclick="pickNumber()">번호 뽑기</button>
+        <p>1~45 중 번호 뽑기<br>(6, 7, 8 제외됨)</p>
         <div id="result">?</div>
+        <button onclick="pickNumber()">번호 추첨</button>
     </div>
+
     <script>
         function pickNumber() {
-            const min = parseInt(document.getElementById('min').value);
-            const max = parseInt(document.getElementById('max').value);
-            if (min >= max) { alert("범위를 확인해주세요!"); return; }
-            document.getElementById('result').innerText = Math.floor(Math.random() * (max - min + 1)) + min;
+            const exclude = [6, 7, 8]; // 나오지 않게 할 번호
+            let pool = [];
+            
+            // 1부터 45까지 숫자 중 제외 번호만 빼고 넣기
+            for (let i = 1; i <= 45; i++) {
+                if (!exclude.includes(i)) {
+                    pool.push(i);
+                }
+            }
+
+            // 남은 숫자 중 하나 무작위 선택
+            const randomIndex = Math.floor(Math.random() * pool.length);
+            document.getElementById('result').innerText = pool[randomIndex];
         }
     </script>
 </body>
 </html>
+
