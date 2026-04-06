@@ -10,7 +10,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
             background-color: #f0f2f5;
         }
@@ -20,9 +20,9 @@
             border-radius: 20px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             text-align: center;
-            width: 350px;
+            width: 380px;
         }
-        h1 { color: #333; margin-bottom: 1.5rem; }
+        h1 { color: #333; margin-bottom: 1.5rem; font-size: 1.5rem; }
         .input-group {
             display: flex;
             justify-content: space-between;
@@ -32,36 +32,81 @@
             width: 45%;
             text-align: left;
         }
+        label { font-size: 0.85rem; color: #666; margin-bottom: 5px; display: block; }
         input {
             width: 100%;
-            padding: 8px;
+            padding: 10px;
             border: 1px solid #ddd;
             border-radius: 8px;
             box-sizing: border-box;
+            outline: none;
+        }
+        input:focus { border-color: #007bff; }
+        
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
         button {
             width: 100%;
             padding: 12px;
-            background-color: #007bff;
             color: white;
             border: none;
             border-radius: 8px;
             font-size: 1rem;
+            font-weight: bold;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: transform 0.1s, opacity 0.2s;
         }
-        button:hover { background-color: #0056b3; }
+        button:active { transform: scale(0.98); }
+        
+        .btn-single { background-color: #007bff; }
+        .btn-single:hover { background-color: #0056b3; }
+        
+        .btn-multi { background-color: #28a745; }
+        .btn-multi:hover { background-color: #218838; }
+
         #result {
             font-size: 3rem;
             font-weight: bold;
             color: #007bff;
-            margin-top: 1.5rem;
-            height: 4rem;
+            margin: 1.5rem 0;
+            min-height: 4.5rem;
             display: flex;
             justify-content: center;
             align-items: center;
         }
-        .error { color: #ff4d4d; font-size: 0.8rem; margin-top: 10px; display: none; }
+
+        .multi-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .ball {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            animation: pop 0.3s ease-out forwards;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0); opacity: 0; }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .error { color: #ff4d4d; font-size: 0.85rem; margin-top: 15px; display: none; }
     </style>
 </head>
 <body>
@@ -80,39 +125,44 @@
         </div>
     </div>
 
-    <button onclick="pickNumber()">번호 뽑기</button>
+    <div class="btn-group">
+        <button class="btn-single" onclick="pickNumber()">번호 1개 뽑기</button>
+        <button class="btn-multi" onclick="pickFourNumbers()">번호 4개 동시 뽑기</button>
+    </div>
     
     <div id="result">?</div>
-    <div id="errorMsg" class="error">뽑을 수 있는 숫자가 없습니다!</div>
+    <div id="multiResult" class="multi-container"></div>
+    
+    <div id="errorMsg" class="error">뽑을 수 있는 숫자가 부족합니다!</div>
 </div>
 
 <script>
+    // 제외할 숫자 (전역 설정)
+    const secretExclude = [6, 7, 8];
+
+    // 1개 뽑기 함수 (기존 로직 유지)
     function pickNumber() {
         const min = parseInt(document.getElementById('minNum').value);
         const max = parseInt(document.getElementById('maxNum').value);
         const resultDisplay = document.getElementById('result');
+        const multiResult = document.getElementById('multiResult');
         const errorMsg = document.getElementById('errorMsg');
         
-        // 1. 제외할 숫자 정의 (몰래 제외)
-        const secretExclude = [6, 7, 8];
+        multiResult.innerHTML = ''; // 멀티 결과창 초기화
         
-        // 2. 범위 내 가능한 숫자 배열 만들기
         let availableNumbers = [];
         for (let i = min; i <= max; i++) {
-            if (!secretExclude.includes(i)) {
-                availableNumbers.push(i);
-            }
+            if (!secretExclude.includes(i)) availableNumbers.push(i);
         }
 
-        // 예외 처리 (범위 내 숫자가 없거나 제외된 숫자 뿐일 때)
         if (availableNumbers.length === 0) {
+            errorMsg.innerText = "뽑을 수 있는 숫자가 없습니다!";
             errorMsg.style.display = 'block';
             resultDisplay.innerText = 'X';
             return;
         }
         errorMsg.style.display = 'none';
 
-        // 3. 애니메이션 효과 (숫자가 0.5초 동안 빠르게 바뀜)
         let count = 0;
         const interval = setInterval(() => {
             const tempRandom = Math.floor(Math.random() * (max - min + 1)) + min;
@@ -121,14 +171,58 @@
             
             if (count > 10) {
                 clearInterval(interval);
-                // 4. 최종 결과 선택 (필터링된 배열에서만 뽑음)
                 const finalIndex = Math.floor(Math.random() * availableNumbers.length);
                 resultDisplay.innerText = availableNumbers[finalIndex];
             }
         }, 50);
     }
+
+    // 4개 한꺼번에 뽑기 함수
+    function pickFourNumbers() {
+        const min = parseInt(document.getElementById('minNum').value);
+        const max = parseInt(document.getElementById('maxNum').value);
+        const resultDisplay = document.getElementById('result');
+        const multiResult = document.getElementById('multiResult');
+        const errorMsg = document.getElementById('errorMsg');
+        
+        resultDisplay.innerText = ''; // 1개 결과창 초기화
+
+        let availableNumbers = [];
+        for (let i = min; i <= max; i++) {
+            if (!secretExclude.includes(i)) availableNumbers.push(i);
+        }
+
+        if (availableNumbers.length < 4) {
+            errorMsg.innerText = "숫자가 부족합니다! (최소 4개 필요)";
+            errorMsg.style.display = 'block';
+            multiResult.innerHTML = '';
+            return;
+        }
+        errorMsg.style.display = 'none';
+
+        // 배열 섞기 (Fisher-Yates Shuffle)
+        for (let i = availableNumbers.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [availableNumbers[i], availableNumbers[j]] = [availableNumbers[j], availableNumbers[i]];
+        }
+
+        // 앞에서 4개 선택 후 오름차순 정렬
+        const selected = availableNumbers.slice(0, 4).sort((a, b) => a - b);
+
+        // 결과 화면에 그리기
+        multiResult.innerHTML = '';
+        selected.forEach((num, index) => {
+            setTimeout(() => {
+                const ball = document.createElement('div');
+                ball.className = 'ball';
+                ball.innerText = num;
+                multiResult.appendChild(ball);
+            }, index * 100); // 0.1초 간격으로 순차적으로 나타나는 효과
+        });
+    }
 </script>
 
 </body>
 </html>
+
 
